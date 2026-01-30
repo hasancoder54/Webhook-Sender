@@ -8,81 +8,37 @@
     <script src="https://unpkg.com/lucide@latest"></script>
     <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;500;700&display=swap" rel="stylesheet">
     <style>
-        :root {
-            --neon-blue: #00d2ff;
-            --neon-purple: #9d50bb;
-        }
-        body {
-            background: radial-gradient(circle at top left, #0d0d12, #050505);
-            color: #fff;
-            font-family: 'Space Grotesk', sans-serif;
-            min-height: screen;
-            overflow-x: hidden;
-        }
-        .glass {
-            background: rgba(255, 255, 255, 0.03);
-            backdrop-filter: blur(15px);
-            border: 1px solid rgba(255, 255, 255, 0.05);
-            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.8);
-        }
-        .input-gradient {
-            background: rgba(10, 10, 15, 0.8);
-            border: 1px solid #222;
-            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-        }
-        .input-gradient:focus {
-            border-color: var(--neon-blue);
-            box-shadow: 0 0 15px rgba(0, 210, 255, 0.2);
-            transform: translateY(-2px);
-        }
-        .animate-glow {
-            animation: glow 3s infinite alternate;
-        }
-        @keyframes glow {
-            from { text-shadow: 0 0 10px rgba(255, 255, 255, 0.2); }
-            to { text-shadow: 0 0 20px var(--neon-blue), 0 0 30px var(--neon-purple); }
-        }
-        .btn-transmit {
-            background: linear-gradient(45deg, var(--neon-blue), var(--neon-purple));
-            transition: all 0.3s;
-        }
-        .btn-transmit:hover {
-            filter: brightness(1.2);
-            letter-spacing: 0.5em;
-            box-shadow: 0 0 30px rgba(157, 80, 187, 0.5);
-        }
-        #anti-security-screen {
-            position: fixed; inset: 0; background: #000; z-index: 10000;
-            display: none; flex-direction: column; align-items: center; justify-content: center;
-        }
+        :root { --neon-blue: #00d2ff; --neon-purple: #9d50bb; }
+        body { background: radial-gradient(circle at top left, #0d0d12, #050505); color: #fff; font-family: 'Space Grotesk', sans-serif; min-height: 100vh; overflow-x: hidden; }
+        .glass { background: rgba(255, 255, 255, 0.03); backdrop-filter: blur(15px); border: 1px solid rgba(255, 255, 255, 0.05); box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.8); }
+        .input-gradient { background: rgba(10, 10, 15, 0.8); border: 1px solid #222; transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1); }
+        .input-gradient:focus { border-color: var(--neon-blue); box-shadow: 0 0 15px rgba(0, 210, 255, 0.2); transform: translateY(-2px); outline: none; }
+        .btn-transmit { background: linear-gradient(45deg, var(--neon-blue), var(--neon-purple)); transition: all 0.3s; }
+        .btn-transmit:hover:not(:disabled) { filter: brightness(1.2); letter-spacing: 0.5em; box-shadow: 0 0 30px rgba(157, 80, 187, 0.5); }
+        .btn-transmit:disabled { opacity: 0.5; cursor: not-allowed; }
+        #anti-security-screen { position: fixed; inset: 0; background: #000; z-index: 10000; display: none; flex-direction: column; align-items: center; justify-content: center; }
     </style>
 </head>
 <body class="p-4 md:p-12">
 
     <div id="anti-security-screen">
-        <div class="animate-bounce mb-8">
-            <i data-lucide="shield-alert" size="120" class="text-red-600"></i>
-        </div>
-        <h1 class="text-6xl md:text-8xl font-black text-red-600 text-center leading-tight tracking-tighter uppercase px-4">
+        <div class="animate-bounce mb-8 text-red-600"><i data-lucide="shield-alert" size="120"></i></div>
+        <h1 class="text-4xl md:text-7xl font-black text-red-600 text-center leading-tight tracking-tighter uppercase px-4">
             DEV BİR ANTİ GÜVENLİK <br>SİSTEMİNE YAKALANDINIZ
         </h1>
     </div>
 
     <main id="app-root" class="opacity-0 transition-opacity duration-1000 max-w-6xl mx-auto space-y-10">
-        
         <header class="flex flex-col md:flex-row justify-between items-center gap-6 glass p-8 rounded-3xl">
             <div class="flex items-center gap-4">
-                <div class="p-4 bg-blue-500/10 rounded-2xl border border-blue-500/20">
-                    <i data-lucide="terminal" class="text-cyan-400"></i>
-                </div>
+                <div class="p-4 bg-blue-500/10 rounded-2xl border border-blue-500/20 text-cyan-400"><i data-lucide="terminal"></i></div>
                 <div>
                     <h1 class="text-3xl font-bold tracking-tighter">ADVANCED DISPATCHER v2</h1>
                     <p class="text-[10px] text-zinc-500 tracking-[0.3em] uppercase">Status: Encrypted / Port: Secure</p>
                 </div>
             </div>
-            <div class="flex gap-4 text-[10px] font-mono text-zinc-400">
-                <span class="px-3 py-1 border border-zinc-800 rounded-full">95.10.18.149</span>
-                <span class="px-3 py-1 border border-zinc-800 rounded-full">192.168.1.200</span>
+            <div class="flex gap-4 text-[10px] font-mono text-zinc-400 uppercase">
+                <span class="px-3 py-1 border border-zinc-800 rounded-full">Authorized Access Only</span>
             </div>
         </header>
 
@@ -92,23 +48,21 @@
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div class="space-y-2">
                             <label class="text-xs font-bold text-zinc-500 flex items-center gap-2 uppercase"><i data-lucide="user" size="14"></i> Bot İsmi</label>
-                            <input type="text" id="username" class="input-gradient w-full p-4 rounded-xl" placeholder="Aegis Bot">
+                            <input type="text" id="username" class="input-gradient w-full p-4 rounded-xl text-white" placeholder="Aegis Bot">
                         </div>
                         <div class="space-y-2">
                             <label class="text-xs font-bold text-zinc-500 flex items-center gap-2 uppercase"><i data-lucide="image" size="14"></i> Profil Foto (URL)</label>
-                            <input type="text" id="avatar" class="input-gradient w-full p-4 rounded-xl" placeholder="https://...">
+                            <input type="text" id="avatar" class="input-gradient w-full p-4 rounded-xl text-white" placeholder="https://...">
                         </div>
                     </div>
-
                     <div class="space-y-2">
                         <label class="text-xs font-bold text-zinc-500 flex items-center gap-2 uppercase"><i data-lucide="message-square" size="14"></i> Mesaj İçeriği</label>
-                        <textarea id="content" rows="5" class="input-gradient w-full p-4 rounded-xl" placeholder="İletilecek veriyi buraya kodlayın..."></textarea>
+                        <textarea id="content" rows="5" class="input-gradient w-full p-4 rounded-xl text-white" placeholder="Mesajınız..."></textarea>
                     </div>
-
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div class="space-y-2">
                             <label class="text-xs font-bold text-zinc-500 flex items-center gap-2 uppercase"><i data-lucide="link" size="14"></i> Embed Görsel</label>
-                            <input type="text" id="imageUrl" class="input-gradient w-full p-4 rounded-xl" placeholder="https://...">
+                            <input type="text" id="imageUrl" class="input-gradient w-full p-4 rounded-xl text-white" placeholder="https://...">
                         </div>
                         <div class="space-y-2">
                             <label class="text-xs font-bold text-zinc-500 flex items-center gap-2 uppercase"><i data-lucide="file-up" size="14"></i> Dosya Eki</label>
@@ -123,31 +77,17 @@
 
             <div class="lg:col-span-5">
                 <div class="glass p-8 rounded-3xl sticky top-8 border-t-4 border-t-cyan-500/30">
-                    <div class="flex justify-between items-center mb-6">
-                        <h2 class="text-sm font-black uppercase tracking-widest text-zinc-400">Live Preview</h2>
-                        <div class="flex gap-1">
-                            <div class="w-2 h-2 rounded-full bg-red-500"></div>
-                            <div class="w-2 h-2 rounded-full bg-yellow-500"></div>
-                            <div class="w-2 h-2 rounded-full bg-green-500"></div>
-                        </div>
-                    </div>
-                    
+                    <h2 class="text-sm font-black uppercase tracking-widest text-zinc-400 mb-6">Live Preview</h2>
                     <div class="bg-black/40 rounded-2xl p-6 border border-zinc-800 space-y-4">
                         <div class="flex items-center gap-4">
-                            <img id="prev-avatar" src="https://ui-avatars.com/api/?name=H&background=random" class="w-12 h-12 rounded-full border border-zinc-700 shadow-xl">
-                            <div>
-                                <h3 id="prev-user" class="font-bold text-white leading-none">Aegis Bot</h3>
-                                <span class="text-[9px] bg-blue-600 px-1 rounded-sm uppercase font-bold mt-1 inline-block">Bot</span>
-                            </div>
+                            <img id="prev-avatar" src="https://ui-avatars.com/api/?name=H" class="w-12 h-12 rounded-full border border-zinc-700">
+                            <div><h3 id="prev-user" class="font-bold text-white">Aegis Bot</h3><span class="text-[9px] bg-blue-600 px-1 rounded-sm uppercase font-bold mt-1 inline-block text-white">Bot</span></div>
                         </div>
-                        <p id="prev-content" class="text-zinc-300 text-sm leading-relaxed">Veri bekleniyor...</p>
+                        <p id="prev-content" class="text-zinc-300 text-sm">Veri bekleniyor...</p>
                         <img id="prev-img" class="rounded-lg border border-zinc-800 hidden w-full object-cover max-h-48">
                     </div>
-
-                    <button id="sendBtn" onclick="handleSend()" class="btn-transmit w-full mt-8 py-6 rounded-2xl text-black font-black text-sm uppercase tracking-[0.4em] shadow-2xl">
-                        TRANSMIT DATA
-                    </button>
-                    <p id="status" class="text-center text-[10px] mt-4 font-mono text-zinc-600 uppercase"></p>
+                    <button id="sendBtn" onclick="handleSend()" class="btn-transmit w-full mt-8 py-6 rounded-2xl text-black font-black text-sm uppercase tracking-[0.4em]">TRANSMIT DATA</button>
+                    <p id="status" class="text-center text-[10px] mt-4 font-mono text-zinc-600 uppercase tracking-widest"></p>
                 </div>
             </div>
         </div>
@@ -155,43 +95,30 @@
 
     <script>
         lucide.createIcons();
-
         const ALLOWED_IPS = ['95.10.18.149', '192.168.1.200'];
-        const WEBHOOK_URL = "BURAYA_WEBHOOK_URL_YAZIN";
 
-        // IP Güvenlik Kontrolü
         async function checkSecurity() {
             try {
                 const res = await fetch('https://api.ipify.org?format=json');
                 const data = await res.json();
-                
-                // Yerel ağ veya belirtilen IP kontrolü
                 if (ALLOWED_IPS.includes(data.ip) || data.ip.startsWith('192.168')) {
                     document.getElementById('app-root').classList.remove('opacity-0');
-                } else {
-                    triggerSecurityAlert();
-                }
-            } catch (e) {
-                // Hata verilmez, şüphe durumunda kilitlenir
-                triggerSecurityAlert();
-            }
+                } else { triggerSecurityAlert(); }
+            } catch (e) { triggerSecurityAlert(); }
         }
 
         function triggerSecurityAlert() {
-            document.getElementById('app-root').remove(); // DOM'u komple sil
+            document.getElementById('app-root').remove();
             document.getElementById('anti-security-screen').style.display = 'flex';
         }
 
-        // Live Preview Logic
-        const inputs = ['username', 'avatar', 'content', 'imageUrl'];
-        inputs.forEach(id => {
-            document.getElementById(id).addEventListener('input', () => {
+        // Preview Logic
+        document.querySelectorAll('input, textarea').forEach(el => {
+            el.addEventListener('input', () => {
                 document.getElementById('prev-user').innerText = document.getElementById('username').value || "Aegis Bot";
                 document.getElementById('prev-content').innerText = document.getElementById('content').value || "...";
-                
                 const avatar = document.getElementById('avatar').value;
                 if(avatar) document.getElementById('prev-avatar').src = avatar;
-
                 const img = document.getElementById('imageUrl').value;
                 const pImg = document.getElementById('prev-img');
                 if(img) { pImg.src = img; pImg.classList.remove('hidden'); } else { pImg.classList.add('hidden'); }
@@ -199,51 +126,34 @@
         });
 
         document.getElementById('fileInput').addEventListener('change', (e) => {
-            const fileName = e.target.files[0]?.name || "Dosya Seç";
-            document.getElementById('file-label').innerText = fileName;
+            document.getElementById('file-label').innerText = e.target.files[0]?.name || "Dosya Seç";
         });
 
-        // Veri Gönderimi
         async function handleSend() {
             const btn = document.getElementById('sendBtn');
             const status = document.getElementById('status');
             const fileInput = document.getElementById('fileInput');
             
             btn.disabled = true;
-            status.innerText = "Encrypting & Sending...";
+            status.innerText = "ENCRYPTING DATA...";
 
             const payload = {
                 username: document.getElementById('username').value || "Advanced Dispatcher",
                 avatar_url: document.getElementById('avatar').value || "",
                 content: document.getElementById('content').value,
-                embeds: document.getElementById('imageUrl').value ? [{
-                    image: { url: document.getElementById('imageUrl').value },
-                    color: 3447003
-                }] : []
+                embeds: document.getElementById('imageUrl').value ? [{ image: { url: document.getElementById('imageUrl').value }, color: 3447003 }] : []
             };
 
             const formData = new FormData();
             formData.append('payload_json', JSON.stringify(payload));
-            
-            if (fileInput.files.length > 0) {
-                formData.append('file', fileInput.files[0]);
-            }
+            if (fileInput.files.length > 0) formData.append('file', fileInput.files[0]);
 
             try {
-                const response = await fetch(WEBHOOK_URL, {
-                    method: 'POST',
-                    body: formData
-                });
-
-                if (response.ok) {
-                    status.innerText = "Transmission Successful.";
-                    setTimeout(() => status.innerText = "", 3000);
-                }
-            } catch (err) {
-                // Sessiz hata
-            } finally {
-                btn.disabled = false;
-            }
+                const response = await fetch('/api/send', { method: 'POST', body: formData });
+                status.innerText = response.ok ? "TRANSMISSION SUCCESSFUL." : "ACCESS DENIED.";
+                if(response.ok) setTimeout(() => status.innerText = "", 3000);
+            } catch (err) { status.innerText = "CONNECTION FAILED."; }
+            finally { btn.disabled = false; }
         }
 
         window.onload = checkSecurity;
