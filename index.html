@@ -3,160 +3,853 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Advanced Webhook Sender | Secure</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://unpkg.com/lucide@latest"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;500;700&display=swap" rel="stylesheet">
+    <title id="title-tag-text">Kapsamlı Discord Webhook Gönderici</title>
     <style>
-        :root { --neon-blue: #00d2ff; --neon-purple: #9d50bb; }
-        body { background: radial-gradient(circle at top left, #0d0d12, #050505); color: #fff; font-family: 'Space Grotesk', sans-serif; min-height: 100vh; overflow-x: hidden; }
-        .glass { background: rgba(255, 255, 255, 0.03); backdrop-filter: blur(15px); border: 1px solid rgba(255, 255, 255, 0.05); box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.8); }
-        .input-gradient { background: rgba(10, 10, 15, 0.8); border: 1px solid #222; transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1); }
-        .input-gradient:focus { border-color: var(--neon-blue); box-shadow: 0 0 15px rgba(0, 210, 255, 0.2); transform: translateY(-2px); outline: none; }
-        .btn-transmit { background: linear-gradient(45deg, var(--neon-blue), var(--neon-purple)); transition: all 0.3s; }
-        .btn-transmit:hover:not(:disabled) { filter: brightness(1.2); letter-spacing: 0.5em; box-shadow: 0 0 30px rgba(157, 80, 187, 0.5); }
-        .btn-transmit:disabled { opacity: 0.5; cursor: not-allowed; }
-        #anti-security-screen { position: fixed; inset: 0; background: #000; z-index: 10000; display: none; flex-direction: column; align-items: center; justify-content: center; }
+        /* TEMEL STİLLER (Önceki koddan) */
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #2f3136;
+            color: #dcddde;
+            display: flex;
+            justify-content: center;
+            /* Arapça için sağdan sola desteği */
+            direction: ltr; 
+        }
+        .container {
+            display: flex;
+            gap: 20px;
+            width: 100%;
+            max-width: 1400px;
+        }
+        .form-area, .preview-area {
+            flex: 1;
+            padding: 20px;
+            border-radius: 8px;
+            background-color: #36393f;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+        }
+        h2 {
+            color: #ffffff;
+            border-bottom: 2px solid #5865f2;
+            padding-bottom: 10px;
+            margin-bottom: 20px;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+            color: #b9bbbe;
+        }
+        input[type="text"], input[type="url"], input[type="color"], input[type="datetime-local"], textarea, select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #202225;
+            border-radius: 4px;
+            box-sizing: border-box;
+            background-color: #2f3136;
+            color: #dcddde;
+        }
+        textarea {
+            resize: vertical;
+            min-height: 80px;
+        }
+        .action-buttons {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+        }
+        button {
+            padding: 10px 15px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: background-color 0.2s;
+        }
+        #send-button {
+            background-color: #5865f2;
+            color: white;
+        }
+        #clear-button {
+            background-color: #4f545c;
+            color: white;
+        }
+        .field-buttons button {
+            background-color: #43b581;
+            color: white;
+        }
+        .discord-message {
+            display: flex;
+            margin-bottom: 15px;
+        }
+        .avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            margin-right: 10px;
+            object-fit: cover;
+            background-color: #7289da;
+        }
+        .message-content {
+            flex-grow: 1;
+        }
+        .webhook-name {
+            color: #7289da;
+            font-weight: bold;
+            margin-right: 5px;
+        }
+        /* ... Diğer önizleme stilleri (embed, markdown) buraya eklenecek ... */
+        /* Önizleme Markdown stilleri ve hata stilleri önceki kodda olduğu gibi kalır. */
+
+        /* Yeni Stil: Dil Seçimi */
+        #language-selector-container {
+            position: fixed;
+            top: 10px;
+            right: 20px;
+            z-index: 1000;
+        }
+
+        /* Responsive Düzenleme (Önceki koddan) */
+        @media (max-width: 1000px) {
+            .container {
+                flex-direction: column;
+            }
+        }
+
+        /* Arapça (RTL) için özel ayarlar */
+        .rtl {
+            direction: rtl;
+        }
+        .rtl .container {
+            flex-direction: row-reverse;
+        }
+        .rtl .avatar {
+            margin-right: 0;
+            margin-left: 10px;
+        }
+        .rtl .embed-container {
+            border-left: none;
+            border-right: 4px solid #7289da;
+        }
+        .rtl .action-buttons {
+            flex-direction: row-reverse;
+        }
     </style>
 </head>
-<body class="p-4 md:p-12">
-
-    <div id="anti-security-screen">
-        <div class="animate-bounce mb-8 text-red-600"><i data-lucide="shield-alert" size="120"></i></div>
-        <h1 class="text-4xl md:text-7xl font-black text-red-600 text-center leading-tight tracking-tighter uppercase px-4">
-            DEV BİR ANTİ GÜVENLİK <br>SİSTEMİNE YAKALANDINIZ
-        </h1>
+<body>
+    
+    <div id="language-selector-container">
+        <select id="language-selector" onchange="setLanguage(this.value)">
+            <option value="tr">Türkçe 🇹🇷</option>
+            <option value="en">English 🇺🇸</option>
+            <option value="ar">العربية 🇸🇦</option>
+            <option value="el">Ελληνικά 🇬🇷</option>
+            <option value="zh">中文 (Zhōngwén) 🇨🇳</option>
+            <option value="ko">한국어 (Hangul) 🇰🇷</option>
+            <option value="ja">日本語 (Nihongo) 🇯🇵</option>
+        </select>
     </div>
 
-    <main id="app-root" class="opacity-0 transition-opacity duration-1000 max-w-6xl mx-auto space-y-10">
-        <header class="flex flex-col md:flex-row justify-between items-center gap-6 glass p-8 rounded-3xl">
-            <div class="flex items-center gap-4">
-                <div class="p-4 bg-blue-500/10 rounded-2xl border border-blue-500/20 text-cyan-400"><i data-lucide="terminal"></i></div>
-                <div>
-                    <h1 class="text-3xl font-bold tracking-tighter">ADVANCED DISPATCHER v2</h1>
-                    <p class="text-[10px] text-zinc-500 tracking-[0.3em] uppercase">Status: Encrypted / Port: Secure</p>
-                </div>
-            </div>
-            <div class="flex gap-4 text-[10px] font-mono text-zinc-400 uppercase">
-                <span class="px-3 py-1 border border-zinc-800 rounded-full">Authorized Access Only</span>
-            </div>
-        </header>
+    <div class="container">
+        <div class="form-area">
+            <h2 data-i18n="settings_title">Gönderim Ayarları</h2>
 
-        <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
-            <div class="lg:col-span-7 space-y-6">
-                <div class="glass p-8 rounded-3xl space-y-6">
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div class="space-y-2">
-                            <label class="text-xs font-bold text-zinc-500 flex items-center gap-2 uppercase"><i data-lucide="user" size="14"></i> Bot İsmi</label>
-                            <input type="text" id="username" class="input-gradient w-full p-4 rounded-xl text-white" placeholder="Aegis Bot">
-                        </div>
-                        <div class="space-y-2">
-                            <label class="text-xs font-bold text-zinc-500 flex items-center gap-2 uppercase"><i data-lucide="image" size="14"></i> Profil Foto (URL)</label>
-                            <input type="text" id="avatar" class="input-gradient w-full p-4 rounded-xl text-white" placeholder="https://...">
-                        </div>
-                    </div>
-                    <div class="space-y-2">
-                        <label class="text-xs font-bold text-zinc-500 flex items-center gap-2 uppercase"><i data-lucide="message-square" size="14"></i> Mesaj İçeriği</label>
-                        <textarea id="content" rows="5" class="input-gradient w-full p-4 rounded-xl text-white" placeholder="Mesajınız..."></textarea>
-                    </div>
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div class="space-y-2">
-                            <label class="text-xs font-bold text-zinc-500 flex items-center gap-2 uppercase"><i data-lucide="link" size="14"></i> Embed Görsel</label>
-                            <input type="text" id="imageUrl" class="input-gradient w-full p-4 rounded-xl text-white" placeholder="https://...">
-                        </div>
-                        <div class="space-y-2">
-                            <label class="text-xs font-bold text-zinc-500 flex items-center gap-2 uppercase"><i data-lucide="file-up" size="14"></i> Dosya Eki</label>
-                            <label class="input-gradient w-full p-[14px] rounded-xl flex items-center justify-center cursor-pointer hover:bg-zinc-800">
-                                <span id="file-label" class="text-sm text-zinc-400 font-medium">Dosya Seç</span>
-                                <input type="file" id="fileInput" class="hidden">
-                            </label>
-                        </div>
-                    </div>
-                </div>
+            <div class="form-group">
+                <label data-i18n="webhook_url_label" for="webhook-url">Discord Webhook URL</label>
+                <input type="url" id="webhook-url" data-i18n-ph="webhook_url_ph" placeholder="https://discord.com/api/webhooks/..." required>
             </div>
 
-            <div class="lg:col-span-5">
-                <div class="glass p-8 rounded-3xl sticky top-8 border-t-4 border-t-cyan-500/30">
-                    <h2 class="text-sm font-black uppercase tracking-widest text-zinc-400 mb-6">Live Preview</h2>
-                    <div class="bg-black/40 rounded-2xl p-6 border border-zinc-800 space-y-4">
-                        <div class="flex items-center gap-4">
-                            <img id="prev-avatar" src="https://ui-avatars.com/api/?name=H" class="w-12 h-12 rounded-full border border-zinc-700">
-                            <div><h3 id="prev-user" class="font-bold text-white">Aegis Bot</h3><span class="text-[9px] bg-blue-600 px-1 rounded-sm uppercase font-bold mt-1 inline-block text-white">Bot</span></div>
+            <div class="form-group">
+                <label data-i18n="username_label" for="username">Gönderici Adı (Opsiyonel)</label>
+                <input type="text" id="username" data-i18n-ph="username_ph" placeholder="Örn: Benim Servisim">
+            </div>
+
+            <div class="form-group">
+                <label data-i18n="avatar_url_label" for="avatar-url">Avatar URL (Opsiyonel)</label>
+                <input type="url" id="avatar-url" data-i18n-ph="avatar_url_ph" placeholder="https://...">
+            </div>
+
+            <div class="form-group">
+                <label data-i18n="content_label" for="content">Ana Mesaj Metni (Opsiyonel)</label>
+                <textarea id="content" data-i18n-ph="content_ph" placeholder="Sadece metin gönderecekseniz buraya yazın."></textarea>
+            </div>
+
+            <h2 data-i18n="embed_title_main">Embed Oluşturucu</h2>
+            
+            <div class="form-group">
+                <label data-i18n="embed_title_label" for="embed-title">Embed Başlık</label>
+                <input type="text" id="embed-title" data-i18n-ph="embed_title_ph" placeholder="Maks. 256 Karakter">
+            </div>
+
+            <div class="form-group">
+                <label data-i18n="embed_description_label" for="embed-description">Embed Açıklama</label>
+                <textarea id="embed-description" data-i18n-ph="embed_description_ph" placeholder="Maks. 2048 Karakter"></textarea>
+            </div>
+
+            <div class="form-group" style="display: flex; gap: 15px;">
+                <div style="flex: 1;">
+                    <label data-i18n="embed_color_label" for="embed-color">Embed Renk (Hex)</label>
+                    <input type="color" id="embed-color" value="#5865f2" style="height: 38px;">
+                </div>
+                <div style="flex: 1;">
+                    <label data-i18n="timestamp_label" for="embed-timestamp">Zaman Damgası (Opsiyonel)</label>
+                    <input type="datetime-local" id="embed-timestamp">
+                </div>
+            </div>
+
+            <h3 data-i18n="embed_fields_h3">Embed Alanları (Fields)</h3>
+            <div id="embed-fields-container">
+                </div>
+            
+            <div class="field-buttons">
+                <button type="button" data-i18n="add_field_button" onclick="addField()">$+$ Alan Ekle</button>
+            </div>
+
+            <div class="form-group">
+                <label data-i18n="footer_text_label" for="embed-footer-text">Altbilgi (Footer) Metni</label>
+                <input type="text" id="embed-footer-text" data-i18n-ph="footer_text_ph" placeholder="Maks. 2048 Karakter">
+            </div>
+
+            <div class="form-group">
+                <label data-i18n="footer_icon_label" for="embed-footer-icon">Altbilgi İkon URL (Opsiyonel)</label>
+                <input type="url" id="embed-footer-icon" data-i18n-ph="footer_icon_ph" placeholder="https://...">
+            </div>
+
+            <div class="action-buttons">
+                <button id="send-button" data-i18n="send_button" onclick="sendWebhook()">Webhook Gönder</button>
+                <button id="clear-button" data-i18n="clear_button" onclick="clearForm()">Formu Temizle</button>
+            </div>
+            
+            <div id="status-message" style="display: none;"></div>
+
+        </div>
+
+        <div class="preview-area">
+            <h2 data-i18n="preview_title">Canlı Discord Önizlemesi</h2>
+            <div class="discord-channel">
+                <div class="discord-message">
+                    <img id="preview-avatar" class="avatar" src="https://assets-global.website-files.com/6257ade9f7df867e3347f879/625c56c802868202d558d1ec_discord-logo.png" alt="Avatar">
+                    <div class="message-content">
+                        <div class="message-header">
+                            <span id="preview-username" class="webhook-name">Webhook Servis Botu</span>
+                            <span id="preview-timestamp" class="timestamp" data-i18n-time="now">Bugün saat 1:38</span>
                         </div>
-                        <p id="prev-content" class="text-zinc-300 text-sm">Veri bekleniyor...</p>
-                        <img id="prev-img" class="rounded-lg border border-zinc-800 hidden w-full object-cover max-h-48">
+                        <div id="preview-content" class="message-text"></div>
+                        <div id="preview-embeds-container">
+                            </div>
                     </div>
-                    <button id="sendBtn" onclick="handleSend()" class="btn-transmit w-full mt-8 py-6 rounded-2xl text-black font-black text-sm uppercase tracking-[0.4em]">TRANSMIT DATA</button>
-                    <p id="status" class="text-center text-[10px] mt-4 font-mono text-zinc-600 uppercase tracking-widest"></p>
                 </div>
             </div>
         </div>
-    </main>
+    </div>
 
     <script>
-        lucide.createIcons();
-        const ALLOWED_IPS = ['95.10.18.149', '192.168.1.200'];
+        // ===============================================
+        // ÇOKLU DİL DESTEĞİ (I18N)
+        // ===============================================
+        
+        // Tüm çevirileri içeren nesne
+        const translations = {
+            'tr': {
+                'settings_title': 'Gönderim Ayarları',
+                'webhook_url_label': 'Discord Webhook URL',
+                'webhook_url_ph': 'https://discord.com/api/webhooks/...',
+                'username_label': 'Gönderici Adı (Opsiyonel)',
+                'username_ph': 'Örn: Benim Servisim',
+                'avatar_url_label': 'Avatar URL (Opsiyonel)',
+                'avatar_url_ph': 'https://...',
+                'content_label': 'Ana Mesaj Metni (Opsiyonel)',
+                'content_ph': 'Sadece metin gönderecekseniz buraya yazın.',
+                'embed_title_main': 'Embed Oluşturucu',
+                'embed_title_label': 'Embed Başlık',
+                'embed_title_ph': 'Maks. 256 Karakter',
+                'embed_description_label': 'Embed Açıklama',
+                'embed_description_ph': 'Maks. 2048 Karakter',
+                'embed_color_label': 'Embed Renk (Hex)',
+                'timestamp_label': 'Zaman Damgası (Opsiyonel)',
+                'embed_fields_h3': 'Embed Alanları (Fields)',
+                'add_field_button': '$$+$ Alan Ekle',
+                'footer_text_label': 'Altbilgi (Footer) Metni',
+                'footer_text_ph': 'Maks. 2048 Karakter',
+                'footer_icon_label': 'Altbilgi İkon URL (Opsiyonel)',
+                'footer_icon_ph': 'https://...',
+                'send_button': 'Webhook Gönder',
+                'clear_button': 'Formu Temizle',
+                'preview_title': 'Canlı Discord Önizlemesi',
+                'error_url_content': 'Hata: Webhook URL ve en az bir içerik (metin veya embed) girmelisiniz.',
+                'error_api': 'Discord API Hatası: Durum ',
+                'error_connection': 'Bağlantı Hatası: Webhook URL geçerli olmayabilir veya ağ bağlantınızda sorun olabilir.',
+                'success_send': 'Başarılı: Mesaj Discord\'a gönderildi!',
+                'success_clear': 'Form temizlendi.',
+                'field_label_title': 'Alan Başlığı (Maks. 256)',
+                'field_label_value': 'Alan Değeri (Maks. 1024)',
+                'field_label_inline': 'Inline (Yana Kaydır)',
+                'field_button_delete': 'Sil',
+                'title_tag_text': 'Kapsamlı Discord Webhook Gönderici',
+                'time_now': 'Bugün saat', // Preview
+            },
+            'en': {
+                'settings_title': 'Submission Settings',
+                'webhook_url_label': 'Discord Webhook URL',
+                'webhook_url_ph': 'https://discord.com/api/webhooks/...',
+                'username_label': 'Sender Name (Optional)',
+                'username_ph': 'Ex: My Service Bot',
+                'avatar_url_label': 'Avatar URL (Optional)',
+                'avatar_url_ph': 'https://...',
+                'content_label': 'Main Message Content (Optional)',
+                'content_ph': 'Write here if you only want to send plain text.',
+                'embed_title_main': 'Embed Builder',
+                'embed_title_label': 'Embed Title',
+                'embed_title_ph': 'Max. 256 Characters',
+                'embed_description_label': 'Embed Description',
+                'embed_description_ph': 'Max. 2048 Characters',
+                'embed_color_label': 'Embed Color (Hex)',
+                'timestamp_label': 'Timestamp (Optional)',
+                'embed_fields_h3': 'Embed Fields',
+                'add_field_button': '$$+$ Add Field',
+                'footer_text_label': 'Footer Text',
+                'footer_text_ph': 'Max. 2048 Characters',
+                'footer_icon_label': 'Footer Icon URL (Optional)',
+                'footer_icon_ph': 'https://...',
+                'send_button': 'Send Webhook',
+                'clear_button': 'Clear Form',
+                'preview_title': 'Live Discord Preview',
+                'error_url_content': 'Error: You must enter a Webhook URL and at least one content (text or embed).',
+                'error_api': 'Discord API Error: Status ',
+                'error_connection': 'Connection Error: Webhook URL may be invalid or there\'s a network issue.',
+                'success_send': 'Success: Message sent to Discord!',
+                'success_clear': 'Form cleared.',
+                'field_label_title': 'Field Title (Max. 256)',
+                'field_label_value': 'Field Value (Max. 1024)',
+                'field_label_inline': 'Inline',
+                'field_button_delete': 'Delete',
+                'title_tag_text': 'Comprehensive Discord Webhook Sender',
+                'time_now': 'Today at',
+            },
+            // Diğer Diller için çeviriler (kısaltılmış örnekler)
+            'ar': {
+                'settings_title': 'إعدادات الإرسال',
+                'webhook_url_label': 'رابط Discord Webhook',
+                'webhook_url_ph': 'https://discord.com/api/webhooks/...',
+                'username_label': 'اسم المرسل (اختياري)',
+                'content_ph': 'اكتب هنا إذا كنت تريد إرسال نص عادي فقط.',
+                'embed_title_main': 'منشئ Embed',
+                'embed_fields_h3': 'حقول Embed',
+                'add_field_button': '$$+$ إضافة حقل',
+                'send_button': 'إرسال Webhook',
+                'clear_button': 'مسح النموذج',
+                'preview_title': 'معاينة Discord المباشرة',
+                'error_url_content': 'خطأ: يجب إدخال رابط Webhook ومحتوى واحد على الأقل.',
+                'success_send': 'نجاح: تم إرسال الرسالة إلى Discord!',
+                'field_label_title': 'عنوان الحقل',
+                'field_label_value': 'قيمة الحقل',
+                'field_label_inline': 'في نفس السطر',
+                'field_button_delete': 'حذف',
+                'title_tag_text': 'مرسل Discord Webhook الشامل',
+                'time_now': 'اليوم في الساعة',
+            },
+            'el': {
+                'settings_title': 'Ρυθμίσεις Αποστολής',
+                'webhook_url_label': 'Discord Webhook URL',
+                'embed_title_main': 'Δημιουργός Embed',
+                'add_field_button': '$$+$ Προσθήκη Πεδίου',
+                'send_button': 'Αποστολή Webhook',
+                'clear_button': 'Καθαρισμός Φόρμας',
+                'preview_title': 'Ζωντανή Προεπισκόπηση Discord',
+                'error_url_content': 'Σφάλμα: Πρέπει να εισάγετε URL Webhook και τουλάχιστον ένα περιεχόμενο.',
+                'success_send': 'Επιτυχία: Το μήνυμα στάλθηκε στο Discord!',
+                'field_label_title': 'Τίτλος Πεδίου',
+                'field_label_value': 'Αξία Πεδίου',
+                'field_label_inline': 'Εντός γραμμής',
+                'field_button_delete': 'Διαγραφή',
+                'title_tag_text': 'Ολοκληρωμένος Αποστολέας Discord Webhook',
+                'time_now': 'Σήμερα στις',
+            },
+            'zh': {
+                'settings_title': '提交设置',
+                'webhook_url_label': 'Discord Webhook URL',
+                'embed_title_main': '嵌入生成器',
+                'add_field_button': '$$+$ 添加字段',
+                'send_button': '发送 Webhook',
+                'clear_button': '清除表格',
+                'preview_title': '实时 Discord 预览',
+                'error_url_content': '错误：您必须输入 Webhook URL 和至少一个内容。',
+                'success_send': '成功：消息已发送到 Discord！',
+                'field_label_title': '字段标题',
+                'field_label_value': '字段值',
+                'field_label_inline': '内联',
+                'field_button_delete': '删除',
+                'title_tag_text': '全面的 Discord Webhook 发送器',
+                'time_now': '今天在',
+            },
+            'ko': {
+                'settings_title': '제출 설정',
+                'webhook_url_label': '디스코드 웹훅 URL',
+                'embed_title_main': '임베드 빌더',
+                'add_field_button': '$$+$ 필드 추가',
+                'send_button': '웹훅 전송',
+                'clear_button': '양식 지우기',
+                'preview_title': '실시간 디스코드 미리보기',
+                'error_url_content': '오류: 웹훅 URL과 최소한 하나의 콘텐츠를 입력해야 합니다.',
+                'success_send': '성공: 메시지가 디스코드에 전송되었습니다!',
+                'field_label_title': '필드 제목',
+                'field_label_value': '필드 값',
+                'field_label_inline': '인라인',
+                'field_button_delete': '삭제',
+                'title_tag_text': '포괄적인 디스코드 웹훅 전송기',
+                'time_now': '오늘 시간',
+            },
+            'ja': {
+                'settings_title': '送信設定',
+                'webhook_url_label': 'Discord Webhook URL',
+                'embed_title_main': '埋め込みビルダー',
+                'add_field_button': '$$+$ フィールドを追加',
+                'send_button': 'Webhookを送信',
+                'clear_button': 'フォームをクリア',
+                'preview_title': 'ライブ Discord プレビュー',
+                'error_url_content': 'エラー：Webhook URLと少なくとも1つのコンテンツを入力する必要があります。',
+                'success_send': '成功：メッセージがDiscordに送信されました！',
+                'field_label_title': 'フィールドタイトル',
+                'field_label_value': 'フィールド値',
+                'field_label_inline': 'インライン',
+                'field_button_delete': '削除',
+                'title_tag_text': '包括的なDiscord Webhook送信者',
+                'time_now': '今日の',
+            },
+        };
 
-        async function checkSecurity() {
-            try {
-                const res = await fetch('https://api.ipify.org?format=json');
-                const data = await res.json();
-                if (ALLOWED_IPS.includes(data.ip) || data.ip.startsWith('192.168')) {
-                    document.getElementById('app-root').classList.remove('opacity-0');
-                } else { triggerSecurityAlert(); }
-            } catch (e) { triggerSecurityAlert(); }
-        }
+        // --- DİL YÖNETİMİ FONKSİYONLARI ---
 
-        function triggerSecurityAlert() {
-            document.getElementById('app-root').remove();
-            document.getElementById('anti-security-screen').style.display = 'flex';
-        }
-
-        // Preview Logic
-        document.querySelectorAll('input, textarea').forEach(el => {
-            el.addEventListener('input', () => {
-                document.getElementById('prev-user').innerText = document.getElementById('username').value || "Aegis Bot";
-                document.getElementById('prev-content').innerText = document.getElementById('content').value || "...";
-                const avatar = document.getElementById('avatar').value;
-                if(avatar) document.getElementById('prev-avatar').src = avatar;
-                const img = document.getElementById('imageUrl').value;
-                const pImg = document.getElementById('prev-img');
-                if(img) { pImg.src = img; pImg.classList.remove('hidden'); } else { pImg.classList.add('hidden'); }
-            });
-        });
-
-        document.getElementById('fileInput').addEventListener('change', (e) => {
-            document.getElementById('file-label').innerText = e.target.files[0]?.name || "Dosya Seç";
-        });
-
-        async function handleSend() {
-            const btn = document.getElementById('sendBtn');
-            const status = document.getElementById('status');
-            const fileInput = document.getElementById('fileInput');
+        /**
+         * Sayfayı belirtilen dile çevirir.
+         * @param {string} langCode - Dil kodu (tr, en, ar, vb.)
+         */
+        function translatePage(langCode) {
+            const dictionary = translations[langCode] || translations['tr']; // Bulamazsa Türkçe'ye döner
+            const elements = document.querySelectorAll('[data-i18n]');
             
-            btn.disabled = true;
-            status.innerText = "ENCRYPTING DATA...";
+            // Metinleri Çevir
+            elements.forEach(element => {
+                const key = element.getAttribute('data-i18n');
+                let translation = dictionary[key] || element.textContent;
+                
+                // Alan Ekle butonundaki + işaretini bozmamak için $$ işareti kullanılır
+                translation = translation.replace('$$', ''); 
+                
+                element.textContent = translation;
+            });
+            
+            // Placeholder (Yer Tutucu) Metinlerini Çevir
+            document.querySelectorAll('[data-i18n-ph]').forEach(element => {
+                const key = element.getAttribute('data-i18n-ph');
+                element.setAttribute('placeholder', dictionary[key] || element.placeholder);
+            });
+            
+            // Özel Durumlar: Başlık ve Form Alanlarının Çevirileri
+            document.getElementById('title-tag-text').textContent = dictionary['title_tag_text'] || 'Kapsamlı Discord Webhook Gönderici';
+            
+            // RTL (Right-to-Left) Desteği: Arapça için
+            if (langCode === 'ar') {
+                document.body.classList.add('rtl');
+                document.body.style.direction = 'rtl';
+            } else {
+                document.body.classList.remove('rtl');
+                document.body.style.direction = 'ltr';
+            }
+            
+            // Dil Seçim Kutusu Değerini Güncelle
+            document.getElementById('language-selector').value = langCode;
+            
+            // Önizlemeyi Güncelle (Çevrilmiş Alan Ekle düğmesi metnini yansıtması için)
+            updatePreview();
+        }
 
+        /**
+         * Dil seçimini yapar ve sayfayı çevirir.
+         * @param {string} langCode - Seçilen dil kodu.
+         */
+        function setLanguage(langCode) {
+            // Tarayıcıya kaydet
+            localStorage.setItem('userLanguage', langCode);
+            translatePage(langCode);
+            // Alanlar tekrar oluşturulur (alan ekle metninin değişmesi için)
+            recreateFields(); 
+        }
+
+        /**
+         * Kullanıcının tercih ettiği veya tarayıcının otomatik dilini algılar.
+         * @returns {string} En uygun dil kodu.
+         */
+        function detectLanguage() {
+            // 1. Tarayıcıda kayıtlı dil varsa onu kullan
+            const storedLang = localStorage.getItem('userLanguage');
+            if (storedLang && translations[storedLang]) {
+                return storedLang;
+            }
+            
+            // 2. Tarayıcı dilini algıla
+            const browserLang = (navigator.language || navigator.userLanguage).substring(0, 2);
+            if (translations[browserLang]) {
+                return browserLang;
+            }
+            
+            // 3. Hiçbiri değilse varsayılan olarak Türkçe
+            return 'tr'; 
+        }
+        
+        // --- Form Alanlarını Dil Değişiminde Yeniden Oluşturma ---
+        
+        // Bu, Alan Ekle/Sil butonlarının ve etiketlerin dilini güncel tutmak için gereklidir.
+        function recreateFields() {
+            const fieldsData = getFieldsData();
+            formElements.embedFieldsContainer.innerHTML = ''; // Alanları temizle
+            fieldsData.forEach(field => {
+                addField(field.name, field.value, field.inline); // Alanları yeni dilde ekle
+            });
+        }
+        
+        function getFieldsData() {
+             const fields = [];
+             document.querySelectorAll('.embed-field-input').forEach(inputDiv => {
+                const name = inputDiv.querySelector('[data-type="name"]').value;
+                const value = inputDiv.querySelector('[data-type="value"]').value;
+                const inline = inputDiv.querySelector('[data-type="inline"]').checked;
+                fields.push({ name, value, inline });
+            });
+            return fields;
+        }
+
+        // --- Diğer Fonksiyonlar (Önceki Kapsamlı Koddan) ---
+
+        // Diğer tüm yardımcı fonksiyonlar (hexToDecimal, applyDiscordMarkdown, addField, removeField, updatePreview, sendWebhook, buildEmbedObject, clearForm, showMessage) buraya gelecek.
+        // **ÖNEMLİ:** addField içindeki HTML etiketlerinin (input, label, button) metinleri artık i18n'den alınacak.
+
+        // Aşağıdaki fonksiyonlar, önceki cevaptaki JavaScript kodunun devamı olarak buraya eklenmiştir.
+
+        const formElements = {
+            webhookUrl: document.getElementById('webhook-url'),
+            username: document.getElementById('username'),
+            avatarUrl: document.getElementById('avatar-url'),
+            content: document.getElementById('content'),
+            embedTitle: document.getElementById('embed-title'),
+            embedDescription: document.getElementById('embed-description'),
+            embedColor: document.getElementById('embed-color'),
+            embedTimestamp: document.getElementById('embed-timestamp'),
+            embedFieldsContainer: document.getElementById('embed-fields-container'),
+            embedFooterText: document.getElementById('embed-footer-text'),
+            embedFooterIcon: document.getElementById('embed-footer-icon'),
+            statusMessage: document.getElementById('status-message'),
+        };
+
+        const previewElements = {
+            avatar: document.getElementById('preview-avatar'),
+            username: document.getElementById('preview-username'),
+            timestamp: document.getElementById('preview-timestamp'),
+            content: document.getElementById('preview-content'),
+            embedsContainer: document.getElementById('preview-embeds-container'),
+        };
+
+        let fieldCount = 0;
+
+        function hexToDecimal(hex) {
+            if (!hex) return 0;
+            return parseInt(hex.replace('#', ''), 16);
+        }
+
+        function applyDiscordMarkdown(text) {
+            if (!text) return '';
+            let html = text;
+            
+            // Kapsamlı Kalın: **metin**
+            html = html.replace(/\*\*(.+?)\*\*/g, '<span class="preview-markdown-bold">$1</span>');
+            
+            // Kullanıcının isteği üzerine # ile kalın (Baya Kalın)
+            html = html.replace(/\#(.+?)\#/g, '<span class="preview-markdown-bold" style="font-weight: 900;">$1</span>'); 
+            html = html.replace(/__(.+?)__/g, '<span class="preview-markdown-underline">$1</span>');
+            
+            // Kullanıcının isteği üzerine _ ile yan fontlu (İtalik)
+            html = html.replace(/_(.+?)_/g, '<span class="preview-markdown-italic">$1</span>');
+            html = html.replace(/\*(.+?)\*/g, '<span class="preview-markdown-italic">$1</span>');
+            
+            html = html.replace(/~~(.+?)~~/g, '<span class="preview-markdown-strike">$1</span>');
+            html = html.replace(/```(.+?)```/gs, '<span class="preview-markdown-multicode">$1</span>');
+            html = html.replace(/`(.+?)`/g, '<span class="preview-markdown-code">$1</span>');
+            html = html.replace(/\n/g, '<br>');
+
+            return html;
+        }
+
+        function addField(title = '', value = '', inline = false) {
+            const index = fieldCount++;
+            const currentLang = document.getElementById('language-selector').value;
+            const dict = translations[currentLang];
+            
+            const fieldHTML = `
+                <div class="embed-field-input" data-index="${index}" style="border: 1px solid #202225; padding: 10px; margin-bottom: 10px; border-radius: 4px;">
+                    <div class="form-group">
+                        <label>${dict['field_label_title']}</label>
+                        <input type="text" data-type="name" value="${title}" oninput="updatePreview()">
+                    </div>
+                    <div class="form-group">
+                        <label>${dict['field_label_value']}</label>
+                        <textarea data-type="value" oninput="updatePreview()">${value}</textarea>
+                    </div>
+                    <div class="form-group" style="display: flex; justify-content: space-between; align-items: center;">
+                        <label style="display: inline-flex; align-items: center; margin: 0;">
+                            <input type="checkbox" data-type="inline" ${inline ? 'checked' : ''} onchange="updatePreview()" style="width: auto; margin-right: 5px;">
+                            ${dict['field_label_inline']}
+                        </label>
+                        <button type="button" style="background-color: #f04747; color: white; padding: 5px 10px;" onclick="removeField(${index})">${dict['field_button_delete']}</button>
+                    </div>
+                </div>
+            `;
+            formElements.embedFieldsContainer.insertAdjacentHTML('beforeend', fieldHTML);
+            updatePreview();
+        }
+
+        function removeField(index) {
+            const element = document.querySelector(`.embed-field-input[data-index="${index}"]`);
+            if (element) {
+                element.remove();
+                updatePreview();
+            }
+        }
+
+        function updatePreview() {
+            // Önceki koddan
+            const currentLang = document.getElementById('language-selector').value;
+            const dict = translations[currentLang];
+
+            const currentUsername = formElements.username.value || 'Webhook Servis Botu';
+            const currentAvatar = formElements.avatarUrl.value || 'https://assets-global.website-files.com/6257ade9f7df867e3347f879/625c56c802868202d558d1ec_discord-logo.png';
+            const currentContent = formElements.content.value;
+            const currentTimestamp = formElements.embedTimestamp.value;
+            
+            previewElements.username.textContent = currentUsername;
+            previewElements.avatar.src = currentAvatar;
+            
+            previewElements.timestamp.textContent = dict['time_now'] + ' ' + new Date().toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' });
+
+            previewElements.content.innerHTML = applyDiscordMarkdown(currentContent);
+            
+            // ... Embed Oluşturma kısmı (önceki koddan) ...
+            const embedTitle = formElements.embedTitle.value;
+            const embedDescription = formElements.embedDescription.value;
+            const embedColor = formElements.embedColor.value;
+            const embedFooterText = formElements.embedFooterText.value;
+
+            previewElements.embedsContainer.innerHTML = '';
+            
+            if (embedTitle || embedDescription || embedFooterText) {
+                const embedDiv = document.createElement('div');
+                embedDiv.className = 'embed-container';
+                embedDiv.style.borderLeftColor = embedColor;
+                if (currentLang === 'ar') { // RTL Desteği için
+                    embedDiv.style.borderLeftColor = 'transparent';
+                    embedDiv.style.borderRightColor = embedColor;
+                }
+
+                if (embedTitle) {
+                    embedDiv.insertAdjacentHTML('beforeend', `<div class="embed-title">${embedTitle}</div>`);
+                }
+
+                if (embedDescription) {
+                    embedDiv.insertAdjacentHTML('beforeend', `<div class="embed-description">${applyDiscordMarkdown(embedDescription)}</div>`);
+                }
+
+                const fieldInputs = formElements.embedFieldsContainer.querySelectorAll('.embed-field-input');
+                if (fieldInputs.length > 0) {
+                    const fieldsDiv = document.createElement('div');
+                    fieldsDiv.className = 'embed-fields';
+                    
+                    fieldInputs.forEach(inputDiv => {
+                        const name = inputDiv.querySelector('[data-type="name"]').value;
+                        const value = inputDiv.querySelector('[data-type="value"]').value;
+                        const inline = inputDiv.querySelector('[data-type="inline"]').checked;
+                        
+                        if (name && value) {
+                            const field = document.createElement('div');
+                            field.className = 'embed-field';
+                            if (inline) {
+                                field.style.flex = '1 1 auto'; 
+                                field.style.minWidth = 'calc(50% - 10px)';
+                            } else {
+                                field.style.flex = '1 1 100%';
+                                field.style.minWidth = '100%';
+                            }
+                            
+                            field.innerHTML = `
+                                <div class="embed-field-title">${name}</div>
+                                <div class="embed-field-value">${applyDiscordMarkdown(value)}</div>
+                            `;
+                            fieldsDiv.appendChild(field);
+                        }
+                    });
+                    embedDiv.appendChild(fieldsDiv);
+                }
+
+                if (embedFooterText || currentTimestamp) {
+                    const footerText = embedFooterText;
+                    let timestampDisplay = '';
+
+                    if (currentTimestamp) {
+                        const date = new Date(currentTimestamp);
+                        const formattedTime = date.toLocaleDateString(currentLang) + ' ' + date.toLocaleTimeString(currentLang);
+                        timestampDisplay = `<span class="timestamp">${formattedTime}</span>`;
+                    }
+
+                    const footerContent = (footerText ? footerText + (timestampDisplay ? ' | ' : '') : '') + timestampDisplay;
+
+                    if(footerContent) {
+                        embedDiv.insertAdjacentHTML('beforeend', `
+                            <div class="embed-footer">
+                                ${formElements.embedFooterIcon.value ? `<img src="${formElements.embedFooterIcon.value}" alt="Footer Icon" style="width: 20px; height: 20px; border-radius: 50%; vertical-align: middle; margin-right: 5px;">` : ''}
+                                ${footerContent}
+                            </div>
+                        `);
+                    }
+                }
+
+                previewElements.embedsContainer.appendChild(embedDiv);
+            }
+        }
+        
+        async function sendWebhook() {
+            const webhookUrl = formElements.webhookUrl.value;
+            const content = formElements.content.value;
+            const username = formElements.username.value;
+            const avatarUrl = formElements.avatarUrl.value;
+            const currentLang = document.getElementById('language-selector').value;
+            const dict = translations[currentLang];
+
+            if (!webhookUrl || (!content && !formElements.embedTitle.value && !formElements.embedDescription.value)) {
+                showMessage(dict['error_url_content'], 'error');
+                return;
+            }
+            
             const payload = {
-                username: document.getElementById('username').value || "Advanced Dispatcher",
-                avatar_url: document.getElementById('avatar').value || "",
-                content: document.getElementById('content').value,
-                embeds: document.getElementById('imageUrl').value ? [{ image: { url: document.getElementById('imageUrl').value }, color: 3447003 }] : []
+                content: content || null,
+                username: username || null,
+                avatar_url: avatarUrl || null,
             };
 
-            const formData = new FormData();
-            formData.append('payload_json', JSON.stringify(payload));
-            if (fileInput.files.length > 0) formData.append('file', fileInput.files[0]);
+            const embed = buildEmbedObject();
+            if (Object.keys(embed).length > 0) {
+                payload.embeds = [embed];
+            }
 
             try {
-                const response = await fetch('/api/send', { method: 'POST', body: formData });
-                status.innerText = response.ok ? "TRANSMISSION SUCCESSFUL." : "ACCESS DENIED.";
-                if(response.ok) setTimeout(() => status.innerText = "", 3000);
-            } catch (err) { status.innerText = "CONNECTION FAILED."; }
-            finally { btn.disabled = false; }
+                const response = await fetch(webhookUrl, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(payload)
+                });
+
+                if (response.ok) {
+                    showMessage(dict['success_send'], 'success');
+                } else {
+                    const errorText = await response.text();
+                    showMessage(`${dict['error_api']} ${response.status}. Hata Mesajı: ${errorText.substring(0, 100)}...`, 'error');
+                }
+
+            } catch (error) {
+                showMessage(dict['error_connection'], 'error');
+            }
+        }
+        
+        function buildEmbedObject() {
+            const embed = {};
+            const embedTitle = formElements.embedTitle.value;
+            const embedDescription = formElements.embedDescription.value;
+            const embedColor = formElements.embedColor.value;
+            const embedTimestamp = formElements.embedTimestamp.value;
+
+            if (embedTitle) embed.title = embedTitle;
+            if (embedDescription) embed.description = embedDescription;
+            if (embedColor) embed.color = hexToDecimal(embedColor);
+
+            if (embedTimestamp) {
+                embed.timestamp = new Date(embedTimestamp).toISOString(); 
+            }
+
+            const fields = [];
+            document.querySelectorAll('.embed-field-input').forEach(inputDiv => {
+                const name = inputDiv.querySelector('[data-type="name"]').value;
+                const value = inputDiv.querySelector('[data-type="value"]').value;
+                const inline = inputDiv.querySelector('[data-type="inline"]').checked;
+                
+                if (name && value) {
+                    fields.push({
+                        name: name,
+                        value: value,
+                        inline: inline,
+                    });
+                }
+            });
+
+            if (fields.length > 0) embed.fields = fields;
+
+            const footerText = formElements.embedFooterText.value;
+            const footerIcon = formElements.embedFooterIcon.value;
+            
+            if (footerText || footerIcon) {
+                embed.footer = {};
+                if (footerText) embed.footer.text = footerText;
+                if (footerIcon) embed.footer.icon_url = footerIcon;
+            }
+
+            return embed;
         }
 
-        window.onload = checkSecurity;
+        function clearForm() {
+            const currentLang = document.getElementById('language-selector').value;
+            const dict = translations[currentLang];
+            
+            document.querySelectorAll('input[type="text"], input[type="url"], textarea').forEach(input => input.value = '');
+            document.getElementById('embed-fields-container').innerHTML = '';
+            document.getElementById('embed-color').value = '#5865f2';
+            document.getElementById('embed-timestamp').value = '';
+            
+            fieldCount = 0; 
+            
+            showMessage(dict['success_clear'], 'success');
+            
+            // Temizledikten sonra bir başlangıç alanı ekle ve önizlemeyi güncelle
+            addField('', '', true);
+            updatePreview(); 
+        }
+        
+        function showMessage(message, type) {
+            formElements.statusMessage.textContent = message;
+            formElements.statusMessage.className = `status-${type}`;
+            formElements.statusMessage.style.display = 'block';
+            
+            setTimeout(() => {
+                formElements.statusMessage.style.display = 'none';
+            }, 5000);
+        }
+
+        // Tüm form elementlerine dinleyici ekle (Önceki koddan)
+        document.querySelectorAll('input, textarea').forEach(element => {
+            element.addEventListener('input', updatePreview);
+            element.addEventListener('change', updatePreview); 
+        });
+
+        // Sayfa yüklendiğinde otomatik dil algılama
+        document.addEventListener('DOMContentLoaded', () => {
+            const detectedLang = detectLanguage();
+            setLanguage(detectedLang); // Otomatik algılanan veya kaydedilen dili ayarla
+            
+            // İlk alan ekleme işlemi setLanguage içinde yapıldığı için burada sadece dinleyicileri ekleyelim.
+        });
+
     </script>
 </body>
 </html>
